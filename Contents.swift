@@ -1,25 +1,35 @@
-import Cocoa
-let a : Double = 4
-let toPrint : String = "Дано кв уравнение x^2 - a = 0, где а = 4"
-var x : Double = 0
-print(toPrint)
+import Foundation
 
-x = sqrt((Double)(a))
-if x*x - a == 0.0 {
-    print("Корень уравнения найден: " + String(x))
-} else {
-    print("Не удалось найти корень")
+func checkInteger(toCheck: Int, chengeParam : Bool = false) -> Bool {
+    let param = chengeParam ? 3 : 2
+    if toCheck % param == 0 {
+        return true
+    }
+    return false
 }
+
+print(checkInteger(toCheck: 4)) // определяет четное число или нет
+print(checkInteger(toCheck: 5, chengeParam: true)) // определяет делится ли число без остатка на 3
+
 print("\n")
 
-let c : Double = 5
-let b : Double = 9
-let s : Double = (c*b) / 2
-let m : Double = sqrt(pow(c,2) + pow(b,2))
-let p : Double = c + b + m
-print("Площадь треугольника равна \(s)")
-print("Периметр треугольника равен \(p)")
-print("Гипотенуза треугольника равна \(m)")
+func createList(existList : [Int] = [Int]()) -> [Int] {
+    var newList : [Int] = [Int]()
+    if existList.isEmpty {
+        for i in 1...100 {
+            newList.append(i)
+        }
+    } else {
+        for i in existList {
+            if !checkInteger(toCheck: i) && checkInteger(toCheck: i, chengeParam: true) {
+                newList.append(i)
+            }
+        }
+    }
+    return newList
+}
 
-
+let newList : [Int] = createList()
+print(newList) // Создаем новый список
+print(createList(existList: newList)) // Очищаем от четных и чисел, которые не делятся на 3
 
