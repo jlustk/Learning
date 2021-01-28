@@ -129,8 +129,8 @@ struct TrunkCar {
         }
     }
     
-    func getCargoSpace() {
-        print("empty - \(cargoSpace - fullCargoSpace)")
+    func about() {
+        print("windows is open - \(windowsIsOpen) engine is start - \(engine)")
     }
     
     mutating func addCargo(_ space : Double) {
@@ -145,10 +145,14 @@ struct TrunkCar {
 var volvo = TrunkCar(model: "Volvo", year: 2021, cargoSpace: 3000)
 
 volvo.testing(.openWindows)
+volvo.about()
 volvo.testing(.closeWindows)
 volvo.testing(.startEngine)
+volvo.about()
 volvo.testing(.stopEngine)
 volvo.addCargo(2000)
 volvo.addCargo(800)
 volvo.getCargoSpace()
 volvo.addCargo(1000)
+volvo.about()
+
