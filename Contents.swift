@@ -1,3 +1,4 @@
+import UIKit
 import Foundation
 
 enum engineProgram {
@@ -5,13 +6,31 @@ enum engineProgram {
     case start
 }
 
-struct SportCar {
+enum doSome {
+    case openWindows
+    case closeWindows
+    case startEngine
+    case stopEngine
+    case addCargo
+    case updateSpeed
+}
+
+enum ans {
+    case open(msg : String)
+    case close(msg : String)
+    case startE(msg : String)
+    case stopE(msg : String)
+    case tryAddCargo(msg: String)
+    case newSpeed(msg: String)
+    case notCoise(msg : String)
+}
+
+class Car {
     let model: String
     let year: Int
     let cargoSpace: Double
     var engine: engineProgram
     var windowsIsOpen: Bool
-    private var fullCargoSpace: Double
     
     init(model: String, year: Int, cargoSpace: Double) {
         self.model = model
@@ -19,101 +38,23 @@ struct SportCar {
         self.cargoSpace = cargoSpace
         self.engine = .stop
         self.windowsIsOpen = false
-        self.fullCargoSpace = 0.0
     }
     
-    enum testCase : String {
-        case checkWindows = "Try to open or close windows"
-        case checkEngin = "Engine start program"
-    }
-
-    let testEngine = testCase(rawValue: "Engine start program")
-    enum ans {
-        case openWindow(msg : String, toDo: Bool)
-        case closeWindow(msg : String, toDo: Bool)
-        case startEngine(msg : String)
-        case stopEngine(msg : String)
-    }
-
-    func testing(_ count : testCase) -> ans {
-        switch count {
-        case .checkWindows:
-            if self.windowsIsOpen {
-                return .openWindow(msg: "Windows is open", toDo: true)
-            } else {
-                return .closeWindow(msg: "Windows is close", toDo: false)
-            }
-        case .checkEngin:
-            if self.engine == .start {
-                return .startEngine(msg: "Engine start")
-            } else {
-                return .stopEngine(msg: "Engine stop")
-            }
-        }
-    }
-
-    func getCargoSpace() {
-        print("empty - \(cargoSpace - fullCargoSpace)")
-    }
-    
-    mutating func addCargo(_ space : Double) {
-        if self.fullCargoSpace + space <= cargoSpace {
-            self.fullCargoSpace += space
-        } else {
-            print("Sorry, not enough space in the trunk, empty - \(cargoSpace - fullCargoSpace)")
-        }
+    func vehicleOperations(_ operation : doSome, _ : Double = 0.0) -> ans {
+        return(.notCoise(msg: "Vehicle not choise"))
     }
 }
 
-var bmw = SportCar(model: "BMW", year: 2021, cargoSpace: 160)
-
-bmw.testing(.checkEngin)
-bmw.engine = .start
-bmw.testing(.checkEngin)
-bmw.testing(.checkWindows)
-bmw.windowsIsOpen = true
-bmw.testing(.checkWindows)
-bmw.addCargo(12)
-bmw.addCargo(28)
-bmw.getCargoSpace()
-bmw.addCargo(130)
-
-var gtr = SportCar(model: "Nissan GTR", year: 2021, cargoSpace: 120)
-gtr.addCargo(130)
-
-struct TrunkCar {
-    let model: String
-    let year: Int
-    let cargoSpace: Double
-    var engine: engineProgram
-    var windowsIsOpen: Bool
-    private var fullCargoSpace: Double
+class TrunkCar : Car {
+    var fullCargoSpace: Double = 0.0
     
-    init(model: String, year: Int, cargoSpace: Double) {
-        self.model = model
-        self.year = year
-        self.cargoSpace = cargoSpace
-        self.engine = .stop
-        self.windowsIsOpen = false
-        self.fullCargoSpace = 0.0
-    }
-    
-    enum doSome {
-        case openWindows
-        case closeWindows
-        case startEngine
-        case stopEngine
-    }
-    
-    enum ans {
-        case open(msg : String)
-        case close(msg : String)
-        case startE(msg : String)
-        case stopE(msg : String)
+    init(model: String, year: Int, cargoSpace: Double, fullCargoSpace: Double) {
+        self.fullCargoSpace = fullCargoSpace
+        super.init(model: model, year: year, cargoSpace: cargoSpace)
     }
 
-    mutating func testing(_ count : doSome) -> ans {
-        switch count {
+    override func vehicleOperations(_ operation : doSome, _ fullCargo : Double = 0.0) -> ans {
+        switch operation {
         case .openWindows:
             self.windowsIsOpen = true
             return .open(msg: "Windows is open")
@@ -126,33 +67,57 @@ struct TrunkCar {
         case .stopEngine:
             self.engine = .stop
             return .stopE(msg: "Engine stop")
-        }
-    }
-    
-    func about() {
-        print("windows is open - \(windowsIsOpen) engine is start - \(engine)")
-    }
-    
-    mutating func addCargo(_ space : Double) {
-        if self.fullCargoSpace + space <= cargoSpace {
-            self.fullCargoSpace += space
-        } else {
-            print("Sorry, not enough space in the trunk, empty - \(cargoSpace - fullCargoSpace)")
+        case .addCargo:
+            var answer: String
+            if self.fullCargoSpace + fullCargo <= cargoSpace {
+                self.fullCargoSpace += fullCargo
+                answer = "Cargo add to vehicle, empty space \(self.cargoSpace - self.fullCargoSpace)"
+            } else {
+                answer = "Cargo don't add to vehicle, empty space \(self.cargoSpace - self.fullCargoSpace)"
+            }
+            return .tryAddCargo(msg: answer)
+        case .updateSpeed:
+            return .newSpeed(msg: "Not fast")
         }
     }
 }
 
-var volvo = TrunkCar(model: "Volvo", year: 2021, cargoSpace: 3000)
+class SportCar : Car {
+    var speed: UInt = 0
+    
+    init(model: String, year: Int, cargoSpace: Double, speed: UInt) {
+        self.speed = speed
+        super.init(model: model, year: year, cargoSpace: cargoSpace)
+        if self.speed > 0 {
+            self.engine = .start
+        }
+    }
 
-volvo.testing(.openWindows)
-volvo.about()
-volvo.testing(.closeWindows)
-volvo.testing(.startEngine)
-volvo.about()
-volvo.testing(.stopEngine)
-volvo.addCargo(2000)
-volvo.addCargo(800)
-volvo.getCargoSpace()
-volvo.addCargo(1000)
-volvo.about()
+    override func vehicleOperations(_ operation : doSome, _ chengeSpeed : Double = 0.0) -> ans {
+        switch operation {
+        case .openWindows:
+            self.windowsIsOpen = true
+            return .open(msg: "Windows is open")
+        case .closeWindows:
+            self.windowsIsOpen = false
+            return .open(msg: "Windows is close")
+        case .startEngine:
+            self.engine = .start
+            return .startE(msg: "Engine start")
+        case .stopEngine:
+            self.engine = .stop
+            return .stopE(msg: "Engine stop")
+        case .addCargo:
+            return .tryAddCargo(msg: "Sport car not for uploads cargo")
+        case .updateSpeed:
+            self.speed = UInt(chengeSpeed)
+            return .newSpeed(msg: "New speed is \(chengeSpeed)")
+            
+        }
+    }
+}
 
+var bmw = SportCar(model: "bmw", year: 2021, cargoSpace: 10, speed: 100)
+print(bmw.vehicleOperations(.updateSpeed, 140))
+var volvo = TrunkCar(model: "Volvo", year: 2021, cargoSpace: 1200, fullCargoSpace: 1000)
+print(volvo.vehicleOperations(.addCargo, 200))
