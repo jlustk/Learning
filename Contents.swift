@@ -1,101 +1,59 @@
 import UIKit
 import Foundation
 
-enum countSetings {
-    case login
-    case logout
-}
-
-protocol Screen {
-    var memory: Int {get set}
-}
-
-class ScreenMenu: Screen {
-    var memory: Int
-    var settings: countSetings
-    var background: String
+class UserLogin {
+    var employees: [String: String] = [
+        "mail1": "pass1", "mail2": "pass2", "mail3": "pass3"
+    ]
     
-    init(settings: countSetings, background: String, memory: Int) {
-        self.settings = settings
-        self.background = background
-        self.memory = memory
+    func checkPass(_ mail: String, _ password: String) -> Bool? {
+        guard let existMail = employees[mail] else {return nil}
+        return existMail == password
     }
 }
 
-class ScreenImage: Screen {
-    var memory: Int
-    var imageName: String
-    var background: String
+var check = UserLogin()
+check.checkPass("mail1", "pass111")
+
+if let user = check.checkPass("mail1", "pass1") {
+    print("answer \(user)")
+}
+
+enum LoginError: Error {
+    case invalidMail
+    case invalidPass
     
-    init(imageName: String, memory: Int) {
-        self.imageName = imageName
-        self.background = "blue"
-        self.memory = memory
-    }
-}
-
-struct ScreenSet<T: Screen> {
-    var openScreen: [T] = []
-    
-    mutating func push(_ screen: T) {
-        openScreen.append(screen)
-    }
-    
-    mutating func pop() -> T? {
-        guard openScreen.count > 0 else {
-            return nil
-        }
-        return openScreen.removeLast()
-    }
-}
-
-extension ScreenSet {
-    subscript(indexces: Int...) -> Int {
-        var total = 0
-        for i in indexces where i >= 0 && i < self.openScreen.count {
-            total += self.openScreen[i].memory
-        }
-        return total
-    }
-}
-
-let useMinMemory: (Int, Int) -> Bool = {
-    (i: Int, j: Int) -> Bool in return i < j
-}
-
-func findMin(obj: ScreenSet<ScreenImage>, predicate: (Int, Int) -> Bool) -> Int {
-    var minUse: Int = 0
-    let len = obj.openScreen.count - 1
-    for i in (0...len) {
-        if minUse == 0 {
-            minUse = obj[i]
-        } else if predicate(obj[i], minUse) {
-            minUse = obj[i]
+    var desc: String {
+        switch self {
+        case .invalidMail:
+            return "Wrong mail address"
+        case .invalidPass:
+            return "Wrong password"
         }
     }
-    return minUse
 }
 
-var menu = ScreenSet<ScreenMenu>()
-var image = ScreenSet<ScreenImage>()
+extension UserLogin {
+    func checkPassError(_ mail: String, _ password: String) throws -> Bool? {
+        guard let existMail = employees[mail] else {
+            throw LoginError.invalidMail
+        }
+        guard existMail == password else {
+            throw LoginError.invalidPass
+        }
+        print("Login successful!")
+        return true
+    }
+}
 
-menu.push(ScreenMenu(settings: .login, background: "green", memory: 220))
-image.push(ScreenImage(imageName: "first", memory: 10))
-image.push(ScreenImage(imageName: "two", memory: 23))
-image.push(ScreenImage(imageName: "three", memory: 15))
-menu.push(ScreenMenu(settings: .logout, background: "red", memory: 40))
+let tryLogin1 = try? check.checkPassError("who", "what")
+let tryLogin2 = try? check.checkPassError("mail1", "what")
+let tryLogin3 = try? check.checkPassError("mail1", "pass1")
 
-image[0]
-image[1]
-image[2]
-image[3]
-image.openScreen.count
-useMinMemory(image[0], image[1])
-findMin(obj: image, predicate: useMinMemory)
-
-image.pop()?.imageName
-image.pop()?.imageName
-image.pop()?.imageName
-menu.pop()?.background
-menu.pop()?.background
-menu.pop()?.background
+do {
+    try check.checkPassError("who", "what")
+} catch let error as LoginError {
+    print(error.desc)
+} catch {
+    print(error.localizedDescription)
+}
